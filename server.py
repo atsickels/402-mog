@@ -5,23 +5,20 @@ This module builds on BaseHTTPServer by implementing the standard GET
 and HEAD requests in a fairly straightforward manner.
 """
 
-__version__ = "0.1"
-__all__ = ["SimpleHTTPRequestHandler"]
-__author__ = "bones7456"
-__home_page__ = "http://li2z.cn/"
+__version__ = "1.0-indev"
+__content_root__ = "./public"
 
 import os
 import posixpath
-from http.server import HTTPServer,BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import urllib
 import cgi
 import shutil
 import mimetypes
 import re
-from io import StringIO
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
     from StringIO import StringIO
 
@@ -36,7 +33,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     request omits the actual contents of the file.
     """
 
-    server_version = "SimpleHTTPWithUpload/" + __version__
+    server_version = "mogserver/" + __version__
 
     def do_GET(self):
         """Serve a GET request."""
@@ -213,7 +210,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # abandon query parameters
         path = path.split('?', 1)[0]
         path = path.split('#', 1)[0]
-        path = posixpath.normpath(urllib.unquote(path))
+        path = posixpath.normpath(urllib.parse.unquote(path))
         words = path.split('/')
         words = filter(None, words)
         path = os.getcwd()
@@ -221,6 +218,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
             if word in (os.curdir, os.pardir): continue
+            path = os.path.join(path, __content_root__)
             path = os.path.join(path, word)
         return path
 
@@ -268,10 +266,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     })
 
 
-def test(HandlerClass=SimpleHTTPRequestHandler,
-         ServerClass=HTTPServer):
-    test(HandlerClass, ServerClass)
-
+def test(bind_addr,
+        handler_class=SimpleHTTPRequestHandler,
+        server_class=ThreadingHTTPServer):
+        with server_class(bind_addr, handler_class) as dae:
+            try:
+                print(f"Webserver is LISTENING at http://0.0.0.0:{bind_addr[1]}")
+                dae.serve_forever()
+            except KeyboardInterrupt:
+                print(" ^C entered, stopping web server....")
+                dae.socket.close()
 
 if __name__ == '__main__':
-    test()
+    test(('', 8080))
