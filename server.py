@@ -370,8 +370,10 @@ if HOST == '':
 Handler = SimpleHTTPRequestHandler
 
 with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
-	serve_message = "Serving HTTP on {host} port {port} (http://{host}:{port}/) ..."
-	print(serve_message.format(host=HOST, port=PORT))
-	httpd.serve_forever()
-
-
+    try:
+        serve_message = "Serving HTTP on {host} port {port} (http://{host}:{port}/) ..."
+        print(serve_message.format(host=HOST, port=PORT))
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print(" ^C entered, stopping web server....")
+        httpd.socket.close()
