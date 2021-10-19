@@ -127,6 +127,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             if not fn:
                 return (False, "Can't find out file name...")
             path = self.translate_path(self.path)
+            path = os.path.join(path, 'uploads')
             fn = os.path.join(path, fn[0])
             line = self.rfile.readline()
             remainbytes -= len(line)
