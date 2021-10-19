@@ -7,8 +7,8 @@ and HEAD requests in a fairly straightforward manner.
 
 see: https://gist.github.com/UniIsland/3346170
 """
- 
- 
+
+
 __version__ = "0.1"
 __content_root__ = "public"
  
